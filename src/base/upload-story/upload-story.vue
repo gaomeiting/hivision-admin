@@ -9,18 +9,16 @@
 			<el-form-item label="作品简介"  prop="info">
 			    <el-input type="textarea" v-model="ruleForm.info"></el-input>
 			</el-form-item>
-	 		<el-form-item label="上传音频文件">
+	 		<el-form-item label="上传音频文件"  prop="story">
 				<el-upload
 				  class="upload-demo"
-				  action="/hversion/upload"
+				  action="/api/media/voice"
 				  :on-success="handleAvatarSuccess"
   				  :before-upload="beforeAvatarUpload">
 				  <el-button size="small" type="primary">点击上传</el-button>
 				  <div slot="tip" class="el-upload__tip">只能上传.mp3文件</div>
 				</el-upload>
 			</el-form-item>
-			
-			
 			<el-form-item>
 				<el-button type="primary" @click="submitForm('ruleForm')">立即创建</el-button>
 				<el-button @click="resetForm('ruleForm')">重置</el-button>
@@ -30,7 +28,7 @@
 </transition>
 </template>
 <script>
-/*import { getSingers, addSinger } from 'api/singers';*/
+import { postData } from 'api/api';
 export default {
     data() {
       return {
@@ -39,7 +37,7 @@ export default {
         ruleForm: {
         	name: '',
         	info: '',
-          story: ''
+          	story: ''
         },
         rules: {
 			name: [
@@ -50,9 +48,9 @@ export default {
 			{ required: true, message: '请选择故事名称', trigger: 'blur' },
 			{ min: 1, max: 400, message: '长度在 400 个字符以内', trigger: 'blur' }
 			],
-          story: [
-            { required: true, message: '请选择故事名称', trigger: 'blur' }
-          ]
+	        story: [
+	        	{ required: true, message: '请上传故事音频', trigger: 'blur' }
+	        ]
         }
       };
     },
@@ -63,8 +61,8 @@ methods: {
     },
 	handleAvatarSuccess(res, file) {
 	    this.imageUrl = URL.createObjectURL(file.raw);
-	    this.ruleForm.uid = file.response;
-	    console.log(this.ruleForm.uid, 'ruleForm')
+	    this.ruleForm.story = file.response.url;
+	    console.log('handleAvatarSuccess', this.ruleForm)
 	},
 	beforeAvatarUpload(file) {
 		console.log(file)
@@ -100,34 +98,31 @@ methods: {
         }
     },
 	submitForm(formName) {
-		const id = this.$route.query.id;
-		if(!this.ruleForm.uid) {
-			window.alert("请先上传故事")
-			return;
-		}
+		const id = this.$route.params.id;
+		///contestant/{id}/voice
 		this.$refs[formName].validate((valid) => {
 		  if (valid) {
-		  	console.log(this.ruleForm.uid,this.ruleForm.story, this.ruleForm.story )
-		    addSinger(`/hversion/audio`, {
-		    	audioId: this.ruleForm.uid,
-		    	storyId: this.ruleForm.story,
-		    	narratorId: this.ruleForm.teacher,
-		    	childStarId: id
-		    }).then(res => {
-		    	let _this = this;
-		    	this.$alert('创建成功', '', {
-		          confirmButtonText: '确定',
-		          callback: action => {
-		            this.$router.push('/singer')
-		          }
+		  	let title = this.ruleForm.name
+		  	let desc = this.ruleForm.info
+		  	let url = this.ruleForm.story
+		  	postData(`/api/contestant/${id}/voice`, {
+		  		title,
+		  		desc,
+		  		url
+		  	}).then(res => {
+		  		this.$message({
+		            type: 'success',
+		            message: '上传音频成功!'
 		        });
-		    }).catch(err => {
-		    	let err_msg = err.detailMessage;
-		    	this.$alert(err_msg, '', {
-		    		"confirmButtonText" : "确定"
-		    	})
-		    	console.log(err.detailMessage, "err")
-		    })
+		        this.$emit('hide')
+		  	}).catch(err => {
+		  		if(err && err.data) {
+		  			this.error = `${err.data.status}${err.data.error}`
+		  		}
+		  		else {
+		  			this.error = '接口调试中请稍等'
+		  		}
+		  	})
 		  } else {
 		    console.log('error submit!!');
 		    return false;

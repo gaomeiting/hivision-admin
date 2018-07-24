@@ -2,14 +2,14 @@
   <div class="error-wrap">
     <div class="content">
       <i class="iconfont icon-error"></i>
-      <p class="desc">{{title}}</p>
+      <p class="desc">{{error}}</p>
     </div>
   </div>
 </template>
 <script type="text/ecmascript-6">
   export default {
     props: {
-      title: {
+      error: {
         type: String,
         default: '接口报错正在调试中'
       }

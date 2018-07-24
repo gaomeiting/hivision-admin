@@ -1,32 +1,32 @@
 <template>
  	<div class="table-item">
-		<ul>
+		<ul v-if="item">
 			<li>
 				<div class="img">
-					<img src="https://ss2.baidu.com/-vo3dSag_xI4khGko9WTAnF6hhy/image/h%3D300/sign=09d2a547a8c27d1eba263dc42bd7adaf/3812b31bb051f8195bf514a9d6b44aed2f73e705.jpg">
+					<img :src="item.avatar">
 				</div>
 				<div class="content">
 					<ul>
 						<li>
-							<p>张小平</p>
-							<p>昵称：太阳叔叔</p>
-							<p>简介：冠军了解一下！冠军了解一下！</p>
+							<p>{{item.realname}} <i></i></p>
+							<p>昵称：{{item.nickname}}</p>
+							<p>简介：{{item.title}}</p>
 						</li>
 						<li>
-							<p>41254789962145****</p>
+							<p>{{item.idCard}}</p>
 							<!-- <p>参赛作品：小白兔吃萝卜 <i></i></p> -->
-							<p>手机:13933247272</p>
-							<p>参赛宣言：冠军了解一下！冠军了解一下！参赛宣言：冠军了解一下！冠军了解一下！</p>
+							<p>手机:{{item.mobile}}</p>
+							<p>参赛宣言：{{item.slogan}}</p>
 						</li>
 						<li>
-							<p>邮箱：123456789@qq.com</p>
-							<p>点赞数：123456</p>
-							<p>吸引流量：1123</p>
+							<p>邮箱：{{item.email}}</p>
+							<p v-if="item.likeNum">点赞数：{{item.likeNum}}</p>
+							<!-- <p>吸引流量：1123</p> -->
 						</li>
 					</ul>
 				</div>
 				<div class="icon">
-					<el-select v-model="value" placeholder="请选择状态">
+					<el-select v-model="value" :placeholder="toggleStatus(this.item.status) || '请选择状态'" @change="changeOption">
 					    <el-option
 					      v-for="item in options"
 					      :key="item.value"
@@ -40,38 +40,51 @@
 		</ul>
  	</div>
 </template>
-<script>
+<script type="text/ecmascript-6">
+
+import  { changeStatus } from 'common/js/mixin';
 export default {
+	mixins: [changeStatus],
 	props: {
-		
-		loading: {
-			type: Boolean,
-			default: true
+		item: {
+			type: Object,
+			default() {
+				return {}
+			}
 		}
 	},
 	data() {
 		return { 
 			options: [{
-	          value: '选项1',
-	          label: '黄金糕'
+	          value: '1',
+	          label: '已报名未提交音频'
 	        }, {
-	          value: '选项2',
-	          label: '双皮奶'
+	          value: '2',
+	          label: '音频待审核'
 	        }, {
-	          value: '选项3',
-	          label: '蚵仔煎'
+	          value: '3',
+	          label: '音频审核不通过'
 	        }, {
-	          value: '选项4',
-	          label: '龙须面'
+	          value: '4',
+	          label: '海选通过'
 	        }, {
-	          value: '选项5',
-	          label: '北京烤鸭'
+	          value: '5',
+	          label: '晋级八强'
+	        }, {
+	          value: '6',
+	          label: '晋级四强'
 	        }],
-	        value: ''
+	        value: '',
+	        placeholder: '请选择状态'
 		}
 	},
+	created() {
+		//if(this.item) this.placeholder = this.toggleStatus(this.item.status);
+	},
 	methods: {
-		
+		changeOption(val) {
+			this.$emit('changeStatus', val)
+		}
 	}
 }
 </script>
@@ -82,10 +95,15 @@ export default {
 
 .table-item {
 
+	> ul {
+		li {
+			padding: 10px 20px;
+		}
+	}
 	li {
 		display: flex;
+		align-items: center;
 		border-bottom: 1px solid $color-background;
-		padding: 20px 0;
 		&:hover {
 		    cursor: pointer;
 		}
@@ -96,7 +114,6 @@ export default {
 			overflow: hidden;
 			border-radius: 25px;
 			margin-right: 10px;
-			margin-top: 8px;
 			img {
 				width: 100%;
 				min-height: 100%;
@@ -109,7 +126,6 @@ export default {
 				li {
 					display: block;
 					border-bottom: none;
-					padding: 0;
 					p {
 						line-height: 2;
 						padding-right: 1em;
@@ -119,7 +135,6 @@ export default {
 
 		}
 		.icon {
-			padding-left: 16px;
 			.button {
 				display: block;
 				width: 100px;
@@ -130,7 +145,6 @@ export default {
 				border-radius: 20px;
 				background: #e6a23c;
 				font-size: 14px;
-				margin-right: 20px;
 				margin-top: 4px;
 			}
 		}

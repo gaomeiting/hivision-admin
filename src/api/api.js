@@ -1,5 +1,26 @@
 import axios from "./http.js";
 import Qs from 'qs';
+export function downData(url, params, showLoading = true) {
+	return axios({
+		method: 'get',
+		url,
+		responseType: 'blob',
+		showLoading
+	}).then((res) => {
+		return Promise.resolve(res.data)
+	}).catch(err => {
+		return Promise.reject(err)
+	})
+	/*return axios.get(url, {
+		params,
+		responseType: 'blob',
+		showLoading
+	}).then((res) => {
+		return Promise.resolve(res.data)
+	}).catch(err => {
+		return Promise.reject(err)
+	})*/
+}
 export function getData(url, params, showLoading = true) {
 	return axios.get(url, {
 		params,

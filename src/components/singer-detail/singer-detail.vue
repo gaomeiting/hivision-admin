@@ -1,25 +1,27 @@
 <template>
 <transition name="fade" mode="out-in">
-	<error v-if="flag" :key="0"></error>
+	<error v-if="error" :error="error" :key="0"></error>
 	<div v-else :key="1" class="page">
 		<div class="title">
 			<span class="sub-title">参赛声咖详情</span>
 		</div>
-		<div class="table-wrap">
-			<table-item></table-item>
+		<div class="table-wrap" v-if="details">
+			<table-item :item="details" @changeStatus="changeStatus"></table-item>
 		</div>
 		<div class="title">
 			<!-- <span class="sub-title">音频</span> -->
-			<a href="javascript:;" style="margin-left: 80px;" class="button">上传音频</a>
+			<a href="javascript:;" style="margin-left: 80px;" class="button" @click="toggleUpload">上传音频</a>
 			
 		</div>
-		<div class="upload-wrap">
-			<upload-story></upload-story>
-		</div>
-		<div class="title" style="margin-top: 20px;">
+		<transition name="slideDown" mode="out-in">
+			<div class="upload-wrap">
+				<upload-story v-if="isUpload" key="0" @hide="hide"></upload-story>
+			</div>
+		</transition>
+		<div class="title" style="margin-top: 20px;" v-if="text">
 			<span class="sub-title">比赛动态</span>
 		</div>
-		<ul class="text">
+		<ul class="text" v-if="text">
 			<li>2018-7-19   海选通过。</li>
 			<li>2018-8-20   进入复赛阶段。</li>
 		</ul>
@@ -30,10 +32,55 @@
 import Error from 'base/error/error';
 import TableItem from 'base/table-item/table-item';
 import UploadStory from 'base/upload-story/upload-story';
+import { postData, getData, putData } from 'api/api';
 export default {
 	data() {
 		return {
-			flag: false
+			error: '',
+			isUpload: false,
+			details: {},
+			text: false
+		}
+	},
+	created() {
+		let id = this.$route.params.id;
+		this._getSingerData(id)
+	},
+	methods: {
+		changeStatus(val) {
+			let id = this.$route.params.id;
+			putData(`/api/contestant/${id}`, {status: val}).then(res => {
+				this.$message({
+		            type: 'success',
+		            message: '修改成功!'
+		        });
+			}).catch(err => {
+				if(err && err.data) {
+					this.error= `${err.data.status}${err.data.error}`;
+				}
+				else {
+					this.error = '接口调试中请等待'
+				}
+			})
+		},
+		hide() {
+			console.log('hide')
+			if(this.isUpload) this.isUpload = false
+		},
+		toggleUpload() {
+			this.isUpload = !this.isUpload;
+		},
+		_getSingerData(id) {
+			getData(`/api/contestant/${id}`).then(res => {
+				this.details = res;
+			}).catch(err => {
+				if(err && err.data) {
+					this.error = err.data.toString()
+				}
+				else {
+					this.error = '接口调试中请等待'
+				}
+			})
 		}
 	},
 	components: {

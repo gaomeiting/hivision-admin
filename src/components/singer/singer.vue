@@ -1,6 +1,6 @@
 <template>
 <transition name="fade" mode="out-in">
-	<error v-if="flag" :key="0"></error>
+	<error :error="error" v-if="error" :key="0"></error>
 	<div v-else :key="1" class="page">
 		<div class="title">
 			<span class="sub-title">搜索</span>
@@ -10,7 +10,7 @@
 	 			<search-box v-for="i in 3" :key="i" :placeholder="i === 1 ? '姓名搜索' : i === 2 ? '手机号搜索' : '邮箱搜索'" @queryChange="queryChange(arguments, i)" ref="searchBox"></search-box>
 	 		</div>
 	 		<div class="select-wrap">
-				<el-select v-model="value" placeholder="请选择">
+				<el-select v-model="form.status" placeholder="请选择" clearable>
 			    <el-option
 				      v-for="item in options"
 				      :key="item.value"
@@ -19,20 +19,21 @@
 				    </el-option>
 				</el-select>
 			</div>
-	 		<span class="button" @click="goAdd('/addSinger')">导出</span>
+	 		<span class="button" @click="search()">查询</span>
+	 		<span class="button" @click="exportMsg()">导出</span>
 	 	</div>
 	 	<div class="title">
 			<span class="sub-title">声咖列表</span>
 		</div>
 	 	<div class="table-wrap">
-	 		<table-list></table-list>
+	 		<table-list :list="list" @selectBtn="selectBtn" @goDetail="goDetail"></table-list>
 	 	</div>
-	 	<div class="pagination-wrap">
+	 	<div class="pagination-wrap" v-if="total">
 	 		<el-pagination
 		      @size-change="handleSizeChange"
 		      @current-change="handleCurrentChange"
 		      :current-page.sync="currentPage"
-		      :page-size="currentSize"
+		      :page-size="size"
 		      layout="prev, pager, next, jumper"
 		      :total="total">
 		    </el-pagination>
@@ -45,42 +46,124 @@ import SearchBox from 'base/search-box/search-box';
 import TableList from 'base/table-list/table-list';
 import Error from 'base/error/error';
 import  { getCommon } from"common/js/mixin";
-/*import {getSingers, deleteSinger} from 'api/singers';*/
+import { postData, getData, downData } from 'api/api';
 export default {
 	mixins: [getCommon],
 	data() {
 		return {
-			currentSize: 6,
-			flag: false,
+			
+			error: '',
+			total: 0,
 			options: [{
-	          value: '选项1',
+	          value: '1',
 	          label: '已报名未提交音频'
 	        }, {
-	          value: '选项2',
+	          value: '2',
 	          label: '音频待审核'
 	        }, {
-	          value: '选项3',
+	          value: '3',
 	          label: '音频审核不通过'
 	        }, {
-	          value: '选项4',
+	          value: '4',
 	          label: '海选通过'
 	        }, {
-	          value: '选项5',
+	          value: '5',
 	          label: '晋级八强'
 	        }, {
-	          value: '选项6',
+	          value: '6',
 	          label: '晋级四强'
 	        }],
-	        value: ''
+	        form: {
+	        	email: '',
+	        	mobile: '',
+	        	realName: '',
+	        	status: ''
+	        },
+	        address: ''
 		}
 	},
 	created() {
-		console.log()
+		this.search()
 	},
 	methods: {
-		queryChange(arg, i) {
-			console.log(...arg, i)
-		}
+		goDetail(item) {
+			this.$router.push(`/singer/${item.id}`)
+		},
+		exportMsg() {
+			let {
+				email,
+				mobile,
+				realName,
+				status
+			} = this.form;
+			let url = `/api/contestant/export?email=${email}&mobile=${mobile}&realName=${realName}&status=${status}`
+			console.log(this.address)
+			downData(url).then(res => {
+				this.download(res)
+			}).catch(err => {
+				if (err && err.data) {
+					console.log(err)
+					this.error = err.data.toString()
+				} else {
+					this.error = "接口调试报错"
+				}
+			})
+		},
+		download (data) {
+	        if (!data) {
+	            return
+	        }
+	        let url = window.URL.createObjectURL(new Blob([data]))
+	        let link = document.createElement('a')
+	        link.style.display = 'none'
+	        link.href = url
+	        link.setAttribute('download', 'excel.xlsx')
+
+	        document.body.appendChild(link)
+	        link.click()
+	    },
+		selectBtn(index, id) {
+			if(index === 0) {
+				this.sendEmail(id)
+			}
+			else if(index === 1) {
+				this.sendSms(id)
+			}
+			else {
+				this.$router.push(`/singer/${id}`)
+			}
+		},
+		sendEmail(email) {
+			postData('/api/send/email', { email }).then(res => {
+				this.$message({
+		            type: 'success',
+		            message: '发送成功!'
+		        });
+			}).catch(err => {
+				if(err && err.data) {
+					this.error = err.data;
+				}
+				else {
+					this.error = "接口调试中请等候"
+				}
+			})
+		},
+		sendSms(mobile) {
+			postData('/api/send/sms', { mobile }).then(res => {
+				this.$message({
+		            type: 'success',
+		            message: '发送成功!'
+		        });
+			}).catch(err => {
+				if(err && err.data) {
+					this.error = err.data;
+				}
+				else {
+					this.error = "接口调试中请等候"
+				}
+			})
+		},
+
 	},
 	components: {
 		TableList,
@@ -136,6 +219,7 @@ export default {
 		font-size: 14px;
 		margin-right: 20px;
 		margin-top: 4px;
+		cursor: pointer;
 	}
 }
 .pagination-wrap {
