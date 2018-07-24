@@ -8,11 +8,9 @@
 		<div class="table-wrap" v-if="details">
 			<table-item :item="details" @changeStatus="changeStatus"></table-item>
 		</div>
-		<div class="title">
-			<!-- <span class="sub-title">音频</span> -->
+		<!-- <div class="title">
 			<a href="javascript:;" style="margin-left: 80px;" class="button" @click="toggleUpload">上传音频</a>
-			
-		</div>
+		</div> -->
 		<transition name="slideDown" mode="out-in">
 			<div class="upload-wrap">
 				<upload-story v-if="isUpload" key="0" @hide="hide"></upload-story>

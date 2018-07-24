@@ -20,7 +20,7 @@
 				</el-select>
 			</div>
 	 		<span class="button" @click="search()">查询</span>
-	 		<span class="button" @click="exportMsg()">导出</span>
+	 		<!-- <span class="button" @click="exportMsg()">导出</span> -->
 	 	</div>
 	 	<div class="title">
 			<span class="sub-title">声咖列表</span>

@@ -24,14 +24,14 @@
 						</li>
 					</ul>
 				</div>
-				<div class="icon" v-if="item.entryWork && item.entryWork.voiceUrl">
+				<!-- <div class="icon" v-if="item.entryWork && item.entryWork.voiceUrl">
 					<a href="javascript:;" class="button" @click.stop="selectBtn(0, item.email)">发邮件</a>
 					<a href="javascript:;" class="button" @click.stop="selectBtn(1, item.mobile)">发短信</a>
 					<a href="javascript:;" class="button" @click.stop="selectBtn(2, item.id)">改状态</a>
 				</div>
 				<div v-else class="icon">
 					<a href="javascript:;" class="button" @click.stop="selectBtn(3, item.id)">上传音频</a>
-				</div>
+				</div> -->
 			</li>
 
 		</ul>
