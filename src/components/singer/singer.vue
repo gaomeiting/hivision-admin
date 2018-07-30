@@ -29,12 +29,12 @@
 	 		<table-list :list="list" @selectBtn="selectBtn" @goDetail="goDetail"></table-list>
 	 	</div>
 	 	<div class="pagination-wrap" v-if="total">
-	 		<el-pagination
+		    <el-pagination
 		      @size-change="handleSizeChange"
 		      @current-change="handleCurrentChange"
 		      :current-page.sync="currentPage"
 		      :page-size="size"
-		      layout="prev, pager, next, jumper"
+		      layout="total, prev, pager, next, jumper"
 		      :total="total">
 		    </el-pagination>
 	 	</div>
